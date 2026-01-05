@@ -1,0 +1,3 @@
+"id,type,country,denomination,currency,coin_year,notes,image_front,image_back
+1,COIN,Indonesia,5,IDR,1970,5 Rupiah bird coin,indonesia-5-rupiah-1970-front.jpg,indonesia-5-rupiah-1970-back.jpg"
+0,COIN,United Kingdom,1,GBP,1927,1 Shilling,british1.jpg,british2.jpg
