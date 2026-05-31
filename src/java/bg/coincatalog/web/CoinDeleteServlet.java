@@ -6,6 +6,7 @@
 package bg.coincatalog.web;
 
 import bg.coincatalog.dao.CoinDAO;
+import bg.coincatalog.service.CoinService;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -21,7 +22,7 @@ public class CoinDeleteServlet extends HttpServlet{
          String idStr =request.getParameter("id");
          int id = Integer.parseInt(idStr);
          
-         new CoinDAO().deleteById(id);
+         new CoinService().deleteItem(id);
          response.sendRedirect("coins");
      }catch(Exception ex){
          throw new ServletException("Delete error: " + ex.getMessage(), ex);

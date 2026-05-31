@@ -55,29 +55,37 @@ public class CoinSaveServlet extends HttpServlet {
 
         request.setCharacterEncoding("UTF-8");
 
-        try {
-            Coin c = new Coin();
-            c.setType(request.getParameter("type"));
-            c.setCountry(request.getParameter("country"));
-            c.setDenomination(request.getParameter("denomination"));
-            c.setCurrency(request.getParameter("currency"));
-
-            String yearStr = request.getParameter("coinYear");
-            c.setCoinYear(Integer.parseInt(yearStr));
-            c.setNotes(request.getParameter("notes"));
-
-          
-            String frontFile = savePart(request.getPart("frontFile"));
-            String backFile  = savePart(request.getPart("backFile"));
-
-            c.setImageFront(frontFile);
-            c.setImageBack(backFile);
-           
-
-            new CoinDAO().insert(c);
-            response.sendRedirect("coins");
-        } catch (Exception ex) {
-            throw new ServletException("Save error: " + ex.getMessage(), ex);
-        }
+    try{
+        String typeParam = request.getParameter("type");
+        
+        bg.coincatalog.model.CatalogItem item;
+         if("BANKNOTE".equalsIgnoreCase(typeParam)){
+             item = new bg.coincatalog.model.Banknote();
+         }else{
+             item = new bg.coincatalog.model.Coin();
+         }
+         
+         item.setCountry(request.getParameter("country"));
+         item.setDenomination(request.getParameter("denomination"));
+         item.setCurrency(request.getParameter("currency"));
+         
+         String yearStr = request.getParameter("coinYear");
+         item.setCoinYear(Integer.parseInt(yearStr));
+         item.setNotes(request.getParameter("notes"));
+         
+         String frontFile = savePart(request.getPart("frontFile"));
+         String backFile = savePart(request.getPart("backFile"));
+         
+         item.setImageFront(frontFile);
+         item.setImageBack(backFile);
+         
+         bg.coincatalog.service.CoinService service = new bg.coincatalog.service.CoinService();
+         service.saveItem(item);
+        response.sendRedirect("coins");
+    }catch (bg.coincatalog.exception.ValidationException vx){
+        throw new ServletException("Грешка при въвеждане на данните: " + vx.getMessage(), vx);
+    }catch (Exception ex){
+        throw new ServletException("Save error:" + ex.getMessage(),ex);
+    }
     }
 }

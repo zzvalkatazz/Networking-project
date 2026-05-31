@@ -1,6 +1,6 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.util.*"%>
-<%@page import="bg.coincatalog.model.Coin"%>
+<%@page import="bg.coincatalog.model.CatalogItem"%>
 
 <!DOCTYPE html>
 <html>
@@ -55,9 +55,9 @@ Decade:
     </tr>
     
     <%
-         List<Coin> coins = (List<Coin>) request.getAttribute("coins");
+    List<CatalogItem> coins = (List<CatalogItem>) request.getAttribute("coins");
     if (coins != null) {
-        for (Coin c : coins) {
+        for (CatalogItem c : coins) {
     %>
       <tr>
         <td><%= c.getId() %></td>

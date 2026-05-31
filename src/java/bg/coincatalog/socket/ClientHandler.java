@@ -6,7 +6,10 @@
 package bg.coincatalog.socket;
 
 import bg.coincatalog.dao.CoinDAO;
+import bg.coincatalog.model.Banknote;
+import bg.coincatalog.model.CatalogItem;
 import bg.coincatalog.model.Coin;
+import bg.coincatalog.service.CoinService;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -39,10 +42,10 @@ public class ClientHandler implements Runnable{
                break;
            }
              if (upper.equals("STATS")) {
-                    CoinDAO dao = new CoinDAO();
-                    int total = dao.countAll();
-                    int coins = dao.countByType("COIN");
-                    int banknotes = dao.countByType("BANKNOTE");
+                    CoinService service = new CoinService();
+                    int total = service.getTotalCount();
+                    int coins = service.getCountByType("COIN");
+                    int banknotes = service.getCountByType("BANKNOTE");
 
                     out.println("TOTAL=" + total);
                     out.println("COIN=" + coins);
@@ -50,12 +53,12 @@ public class ClientHandler implements Runnable{
                     out.println("END");
                 }
              else if(upper.equals("EXPORT")){
-                 CoinDAO dao = new CoinDAO();
+                 CoinService service = new CoinService();
                 
                 out.println("id,type,country,denomination,currency,coin_year,notes,image_front,image_back");
 
                  
-                 for(bg.coincatalog.model.Coin c : dao.getAll()){
+                 for(CatalogItem  c : service.getAllItems()){
                     String notes = c.getNotes() == null ? "" : c.getNotes();
 notes = notes.replace(",", " ").replace("\n", " ").replace("\r", " ");
 
@@ -68,14 +71,13 @@ notes = notes.replace(",", " ").replace("\n", " ").replace("\r", " ");
             c.getDenomination() + "," +
             c.getCurrency() + "," +
             c.getCoinYear() + ","+
-            notes + front + "," +
-  back
+            notes + front + "," + back
         );
                  }
                  out.println("END");
              }
              else if(upper.startsWith("IMPORT")){
-                 CoinDAO dao = new CoinDAO();
+                 CoinService service = new CoinService();
                  int imported = 0;
                  
                  String csvLine;
@@ -89,11 +91,11 @@ notes = notes.replace(",", " ").replace("\n", " ").replace("\r", " ");
             if(csvLine.toLowerCase().startsWith("id,type,country")){
                 
             }else if(!csvLine.equals("END")){
-                if(importOneLine(csvLine,dao)) imported++;
+                if(importOneLine(csvLine,service)) imported++;
             }
             while((csvLine =in.readLine())!=null){
                  if(csvLine.equals("END")) break;
-                 if(importOneLine(csvLine,dao)) imported++;
+                 if(importOneLine(csvLine,service)) imported++;
              }
             out.println("IMPORTED=" + imported);
             out.println("END");
@@ -111,7 +113,7 @@ notes = notes.replace(",", " ").replace("\n", " ").replace("\r", " ");
 }
     
 }
-private boolean importOneLine(String csvLine, CoinDAO dao) {
+private boolean importOneLine(String csvLine, CoinService service) {
     try {
         if (csvLine == null) return false;
 
@@ -123,7 +125,7 @@ private boolean importOneLine(String csvLine, CoinDAO dao) {
         String[] p = csvLine.split(java.util.regex.Pattern.quote(delim), -1);
 
        
-        if (p.length < 7) return false; // минимално за данните
+        if (p.length < 7) return false; 
 String imageFront = (p.length > 7) ? p[7].trim() : "";
 String imageBack  = (p.length > 8) ? p[8].trim() : "";
 
@@ -143,8 +145,13 @@ String imageBack  = (p.length > 8) ? p[8].trim() : "";
             if (imageBack.isEmpty()) imageBack = null;
         }
 
-        Coin c = new Coin();
-        c.setType(type);
+        CatalogItem c;
+        if("BANKNOTE".equalsIgnoreCase(type)){
+            c = new Banknote();
+        }else{
+            c = new Coin();
+        }
+        
         c.setCountry(country);
         c.setDenomination(denomination);
         c.setCurrency(currency);
@@ -153,7 +160,7 @@ String imageBack  = (p.length > 8) ? p[8].trim() : "";
         c.setImageFront(imageFront);
         c.setImageBack(imageBack);
 
-        dao.insert(c);
+        service.saveItem(c);
         return true;
 
     } catch (Exception ex) {
